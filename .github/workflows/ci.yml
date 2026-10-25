@@ -52,5 +52,6 @@ jobs:
             data/clean/
             data/raw/
             data/instamart.db
+            state/
           if-no-files-found: warn
           retention-days: 14

@@ -1,6 +1,22 @@
+# Secrets and local environment
 .env
+.env.*
+!.env.example
 .venv/
 venv/
 __pycache__/
 *.py[cod]
 .DS_Store
+
+# Reproducible runtime data and generated deliverables
+# Keep data/policies/*.txt tracked; only ignore generated raw CSVs.
+data/raw/*.csv
+data/clean/
+data/instamart.db
+outputs/
+state/
+*.joblib
+
+# Editors
+.vscode/
+.idea/

@@ -71,8 +71,8 @@ for i in range(N_CUST):
 write("customers.csv", ["customer_id", "city", "signup_date", "age", "gender"], cust)
 
 # ---------------- orders ----------------
-WIN_START, WIN_DAYS = datetime(2025, 4, 1), 183
-RATE = {"premium": 1.0, "frequent": 3.5, "rare": 0.5}
+WIN_START, WIN_DAYS = datetime(2025, 4, 1), 183          # 2025-04-01 .. 2025-09-30
+RATE = {"premium": 1.0, "frequent": 3.5, "rare": 0.5}   # expected orders per month
 def pick_product(a):
     if a == "premium":
         pool = CAT_IDX["Electronics"] if rng.random() < .7 else CAT_IDX["Personal Care"] + CAT_IDX["Snacks"]
@@ -103,17 +103,17 @@ for cid, a in arche.items():
 out = []
 for k, r in enumerate(rows):
     if k % 100 == 7 and r["status"] == "completed" and r["delivery_minutes"] != "":
-        r["delivery_minutes"] = -10
+        r["delivery_minutes"] = -10                          # impossible negative duration (planted)
     if r["status"] == "completed" and rng.random() < .01:
-        r["order_amount"] = "N/A" if rng.random() < .5 else "error"
+        r["order_amount"] = "N/A" if rng.random() < .5 else "error"   # unparseable amount (planted)
     base = [r["order_id"], r["customer_id"], r["product_id"], r["quantity"], r["order_ts"].strftime("%Y-%m-%d %H:%M:%S"),
             r["status"], r["discount_pct"], r["order_amount"], r["delivery_minutes"]]
     out.append(base)
-    if rng.random() < .05:
+    if rng.random() < .05:   # earlier 'pending' record of the same order (partial duplicate)
         early = list(base); early[4] = (r["order_ts"] - timedelta(minutes=rng.randint(1, 10))).strftime("%Y-%m-%d %H:%M:%S")
         early[5] = "pending"; early[8] = ""
         out.append(early)
-    if rng.random() < .01:
+    if rng.random() < .01:   # exact duplicate
         out.append(list(base))
 rng.shuffle(out)
 write("orders.csv", ["order_id", "customer_id", "product_id", "quantity", "order_ts", "status",
@@ -144,9 +144,9 @@ for n in range(1, 157):
     txt = rng.choice(T[cat]).format(o=order_by_cust[cid], e=f"user{n}@example.com", p=str(rng.choice("6789")) + "".join(rng.choice("0123456789") for _ in range(9)))
     tickets.append([f"T{n:04d}", cid, order_by_cust[cid], txt, cat])
 FILL = "The same problem keeps happening and nobody has given me a clear answer yet. "
-for n in range(157, 161):
+for n in range(157, 161):                         # 4 empty tickets
     tickets.append([f"T{n:04d}", rng.choice(cust_with_orders), "", "", "none"])
-for n in range(161, 165):
+for n in range(161, 165):                         # 4 very long tickets (~520 words)
     tickets.append([f"T{n:04d}", rng.choice(cust_with_orders), "", ("My delivery was late. " + FILL * 40).strip(), "delivery"])
 rng.shuffle(tickets)
 write("tickets.csv", ["ticket_id", "customer_id", "order_id", "text", "true_category"], tickets)
@@ -183,7 +183,7 @@ with open(os.path.join(RAW, "policy_eval.csv"), "w", newline="", encoding="utf-8
 # ---------------- agent scenarios (simulated refund requests) ----------------
 from collections import Counter
 cnt = Counter(r[0] for r in out)
-def clean_row(r):
+def clean_row(r):                                    # single-record, fully valid order
     try:
         return cnt[r[0]] == 1 and r[5] in ("completed", "cancelled") and float(r[7]) > 0 and \
             (r[5] == "cancelled" or (r[8] != "" and 8 <= int(r[8]) <= 75))

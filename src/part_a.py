@@ -25,12 +25,12 @@ def audit():
         "pending_rows": int((orders.status == "pending").sum()), "distinct_order_ids": int(orders.order_id.nunique()),
         "non_numeric_amounts": int(pd.to_numeric(orders.order_amount, errors="coerce").isna().sum()),
         "negative_delivery_minutes": int(pd.to_numeric(orders.delivery_minutes, errors="coerce").lt(0).sum()),
-        "blank_delivery_minutes": int((orders.delivery_minutes.astype(str).str.strip()=="").sum()),
-        "blank_age": int((customers.age.astype(str).str.strip()=="").sum()),
+        "blank_delivery_minutes": int(orders.delivery_minutes.isna().sum() + (orders.delivery_minutes.astype(str).str.strip()=="").sum()),
+        "blank_age": int(customers.age.isna().sum() + (customers.age.astype(str).str.strip()=="").sum()),
         "ages_outside_10_100": int(pd.to_numeric(customers.age, errors="coerce").pipe(lambda x: ((x<10)|(x>100)).sum())),
         "raw_city_spellings": int(customers.city.nunique()),
         "raw_nonblank_gender_spellings": int(customers.loc[customers.gender.astype(str).str.strip()!="", "gender"].nunique()),
-        "blank_gender": int((customers.gender.astype(str).str.strip()=="").sum())}
+        "blank_gender": int(customers.gender.isna().sum() + (customers.gender.astype(str).str.strip()=="").sum())}
     pd.Series(audit, name="value").to_csv(OUT/"part_a_audit.csv", header=True)
     (OUT/"raw_audit.json").write_text(__import__('json').dumps(reports, indent=2), encoding="utf-8")
     return audit

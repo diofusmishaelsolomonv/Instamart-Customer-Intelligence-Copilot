@@ -1,0 +1,56 @@
+name: Reproducible project validation
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+
+      - name: Check Python syntax
+        run: |
+          python -m py_compile generate_data.py mock_llm.py run_all.py validate_data.py src/part_a.py src/part_b.py src/part_c.py src/part_d.py
+
+      - name: Generate deterministic synthetic data
+        run: python generate_data.py
+
+      - name: Run Parts A-D
+        run: python run_all.py
+
+      - name: Validate clean-data checkpoints
+        run: python validate_data.py
+
+      - name: Upload run outputs for review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: instamart-copilot-run-outputs
+          path: |
+            outputs/
+            data/clean/
+            data/raw/
+            data/instamart.db
+          if-no-files-found: warn
+          retention-days: 14

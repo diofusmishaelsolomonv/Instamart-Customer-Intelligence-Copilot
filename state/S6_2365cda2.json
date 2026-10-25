@@ -1,0 +1,51 @@
+{
+  "run_id": "S6_2365cda2",
+  "scenario_id": "S6",
+  "messages": [
+    {
+      "role": "system",
+      "content": "AGENT. Follow the refund policy and use the provided tools. Never issue a refund unless the tool workflow permits it."
+    },
+    {
+      "role": "user",
+      "content": "Refund for order ORD-999999 please."
+    },
+    {
+      "role": "assistant",
+      "content": null,
+      "tool_calls": [
+        {
+          "id": "call_1",
+          "name": "get_order",
+          "arguments": {
+            "order_id": "ORD-999999"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "call_1",
+      "name": "get_order",
+      "content": "{\"error\": \"order not found\"}"
+    }
+  ],
+  "tokens_used": 43,
+  "step_number": 1,
+  "tools_executed": [
+    "get_order"
+  ],
+  "user_message": "Refund for order ORD-999999 please.",
+  "steps": [
+    {
+      "tool_name": "get_order",
+      "arguments": {
+        "order_id": "ORD-999999"
+      },
+      "observation": {
+        "error": "order not found"
+      }
+    }
+  ],
+  "llm_calls": 1
+}

@@ -1,0 +1,77 @@
+{
+  "Q1": {
+    "rows": 30
+  },
+  "Q2": {
+    "rows": 30,
+    "revenue_total": 2998668.8,
+    "largest_cell": {
+      "city": "Bengaluru",
+      "category": "Electronics",
+      "revenue_inr": 233909.45
+    }
+  },
+  "Q3": {
+    "rows": 11
+  },
+  "Q4": {
+    "rows": 25
+  },
+  "Q5": {
+    "rows": 550,
+    "avg_spend": 2552.06
+  },
+  "Q6": {
+    "rows": 1175,
+    "rank_row_number_different": 8,
+    "city_top": [
+      {
+        "city": "Bengaluru",
+        "customer_id": "C0082",
+        "total_spend": 12856.2
+      },
+      {
+        "city": "Chennai",
+        "customer_id": "C0930",
+        "total_spend": 10151.4
+      },
+      {
+        "city": "Delhi",
+        "customer_id": "C0291",
+        "total_spend": 13742.6
+      },
+      {
+        "city": "Hyderabad",
+        "customer_id": "C0743",
+        "total_spend": 12730.050000000001
+      },
+      {
+        "city": "Mumbai",
+        "customer_id": "C0693",
+        "total_spend": 14766.550000000001
+      },
+      {
+        "city": "Pune",
+        "customer_id": "C0426",
+        "total_spend": 10377.1
+      }
+    ]
+  },
+  "Q7": {
+    "rows": 183,
+    "last_cumulative": 2998668.8
+  },
+  "EDA": {
+    "mean": 269.91,
+    "median": 135.0,
+    "skew": 4.61,
+    "q1": 64.8,
+    "q3": 297.0,
+    "lower_fence": -283.5,
+    "upper_fence": 645.3,
+    "outliers_below": 0,
+    "outliers_above": 897,
+    "largest_abs_correlation_pair": "('order_amount', 'discount_pct')",
+    "largest_abs_correlation": 0.095
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "customers": 1175,
+  "recency_median": 19.0,
+  "recency_min": 0,
+  "recency_max": 180,
+  "frequency_mean": 9.45531914893617,
+  "frequency_max": 33,
+  "monetary_mean": 2552.0585531914894,
+  "monetary_max": 14766.550000000001,
+  "pca_explained_variance_ratio": [
+    0.6342787496047422,
+    0.21803761714547426
+  ],
+  "profiles": [
+    {
+      "segment_id": 0,
+      "size": 436,
+      "mean_recency": 28.862385321100916,
+      "mean_frequency": 3.772935779816514,
+      "mean_monetary": 1057.618233944954,
+      "segment_name": "Occasional Essentials",
+      "recommended_action": "Use personalised replenishment reminders and targeted offers.",
+      "is_premium": false
+    },
+    {
+      "segment_id": 1,
+      "size": 138,
+      "mean_recency": 24.115942028985508,
+      "mean_frequency": 6.768115942028985,
+      "mean_monetary": 7129.695652173913,
+      "segment_name": "Premium",
+      "recommended_action": "Offer relevant cross-category bundles and protect service quality.",
+      "is_premium": true
+    },
+    {
+      "segment_id": 2,
+      "size": 419,
+      "mean_recency": 8.766109785202865,
+      "mean_frequency": 19.403341288782816,
+      "mean_monetary": 3410.020525059666,
+      "segment_name": "Frequent Essentials",
+      "recommended_action": "Encourage repeat baskets with low-friction loyalty rewards.",
+      "is_premium": false
+    },
+    {
+      "segment_id": 3,
+      "size": 182,
+      "mean_recency": 109.04395604395604,
+      "mean_frequency": 2.2032967032967035,
+      "mean_monetary": 685.9925824175824,
+      "segment_name": "At-Risk / Low-Activity",
+      "recommended_action": "Run a low-cost win-back campaign and monitor response.",
+      "is_premium": false
+    }
+  ]
+}

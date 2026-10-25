@@ -1,0 +1,149 @@
+{
+  "cohort_size": 1156,
+  "lapsed_count": 443,
+  "lapsed_rate": 0.38321799307958476,
+  "train_rows": 924,
+  "test_rows": 232,
+  "baseline": {
+    "accuracy": 0.6163793103448276,
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0
+  },
+  "logistic_best_params": {
+    "model__C": 10
+  },
+  "logistic_best_cv_f1": 0.6564709088340102,
+  "logistic_test": {
+    "confusion_matrix": [
+      [
+        104,
+        39
+      ],
+      [
+        32,
+        57
+      ]
+    ],
+    "precision": 0.59375,
+    "recall": 0.6404494382022472,
+    "f1": 0.6162162162162163,
+    "accuracy": 0.6939655172413793
+  },
+  "random_forest_best_params": {
+    "model__max_depth": 8,
+    "model__min_samples_leaf": 5
+  },
+  "random_forest_best_cv_f1": 0.6845093423556409,
+  "random_forest_test": {
+    "confusion_matrix": [
+      [
+        107,
+        36
+      ],
+      [
+        32,
+        57
+      ]
+    ],
+    "precision": 0.6129032258064516,
+    "recall": 0.6404494382022472,
+    "f1": 0.6263736263736264,
+    "accuracy": 0.7068965517241379
+  },
+  "selected_model": "random_forest",
+  "reloaded_predictions_equal": true,
+  "train_scaler_frequency_mean": 8.114718614718615,
+  "full_cohort_frequency_mean": 8.028546712802768,
+  "balanced_logistic_test": {
+    "confusion_matrix": [
+      [
+        90,
+        53
+      ],
+      [
+        11,
+        78
+      ]
+    ],
+    "precision": 0.5954198473282443,
+    "recall": 0.8764044943820225,
+    "f1": 0.7090909090909091,
+    "accuracy": 0.7241379310344828
+  },
+  "random_forest_top_features": [
+    {
+      "feature": "num__frequency",
+      "importance": 0.25663068332979594
+    },
+    {
+      "feature": "num__monetary",
+      "importance": 0.2544413251941011
+    },
+    {
+      "feature": "num__recency",
+      "importance": 0.11612142398310273
+    },
+    {
+      "feature": "num__avg_delivery",
+      "importance": 0.0685027519944434
+    },
+    {
+      "feature": "num__avg_discount",
+      "importance": 0.05974751799802679
+    }
+  ],
+  "logistic_coefficients": [
+    {
+      "feature": "num__frequency",
+      "coefficient": -1.5888629771012572,
+      "sign": "negative"
+    },
+    {
+      "feature": "cat__favourite_category_Electronics",
+      "coefficient": -0.810164303687436,
+      "sign": "negative"
+    },
+    {
+      "feature": "cat__city_Delhi",
+      "coefficient": -0.35252555355959403,
+      "sign": "negative"
+    },
+    {
+      "feature": "cat__favourite_category_Grocery",
+      "coefficient": -0.3061518244251788,
+      "sign": "negative"
+    },
+    {
+      "feature": "cat__city_Mumbai",
+      "coefficient": -0.25188382978704194,
+      "sign": "negative"
+    },
+    {
+      "feature": "cat__favourite_category_Snacks",
+      "coefficient": -0.2436511126175425,
+      "sign": "negative"
+    },
+    {
+      "feature": "cat__gender_male",
+      "coefficient": -0.20024735075645692,
+      "sign": "negative"
+    },
+    {
+      "feature": "num__monetary",
+      "coefficient": 0.19939962910577833,
+      "sign": "positive"
+    },
+    {
+      "feature": "cat__city_Chennai",
+      "coefficient": -0.19511056303297394,
+      "sign": "negative"
+    },
+    {
+      "feature": "cat__city_Hyderabad",
+      "coefficient": -0.15546242790975978,
+      "sign": "negative"
+    }
+  ],
+  "premium_retention_list_true_lapsed": 1
+}

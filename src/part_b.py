@@ -6,6 +6,7 @@ import pandas as pd
 import joblib
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.impute import SimpleImputer
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 from sklearn.decomposition import PCA
@@ -32,8 +33,8 @@ def build_rfm(orders, customers):
     k=4; km=KMeans(n_clusters=k,n_init=10,random_state=42).fit(scaled); r['segment_id']=km.labels_
     profiles=r.groupby('segment_id').agg(size=('customer_id','size'),mean_recency=('recency','mean'),mean_frequency=('frequency','mean'),mean_monetary=('monetary','mean')).reset_index()
     order=profiles.sort_values('mean_monetary',ascending=False).segment_id.tolist()
-    names={order[0]:'Premium',order[1]:'High-Value Occasional',order[2]:'Frequent Essentials',order[3]:'At-Risk / Low-Activity'}
-    actions={'Premium':'Offer relevant cross-category bundles and protect service quality.', 'High-Value Occasional':'Use personalised replenishment reminders and targeted offers.', 'Frequent Essentials':'Encourage repeat baskets with low-friction loyalty rewards.', 'At-Risk / Low-Activity':'Run a low-cost win-back campaign and monitor response.'}
+    names={order[0]:'Premium',order[1]:'Frequent Essentials',order[2]:'Occasional Essentials',order[3]:'At-Risk / Low-Activity'}
+    actions={'Premium':'Offer relevant cross-category bundles and protect service quality.', 'Frequent Essentials':'Encourage repeat baskets with low-friction loyalty rewards.', 'Occasional Essentials':'Use personalised replenishment reminders and targeted offers.', 'At-Risk / Low-Activity':'Run a low-cost win-back campaign and monitor response.'}
     profiles['segment_name']=profiles.segment_id.map(names); profiles['recommended_action']=profiles.segment_name.map(actions)
     profiles['is_premium']=profiles.segment_name.eq('Premium')
     profiles.to_csv(OUT/'segment_profiles.csv',index=False)
@@ -62,13 +63,11 @@ def build_lapse(orders, customers, segments):
     categorical=['city','gender','favourite_category']
     for col in numeric: cohort[col]=pd.to_numeric(cohort[col],errors='coerce')
     cohort[numeric]=cohort[numeric].replace([np.inf,-np.inf],np.nan)
-    for col in numeric: cohort[col]=cohort[col].fillna(cohort[col].median())
     for col in categorical: cohort[col]=cohort[col].fillna('unknown').astype(str)
     X=cohort[numeric+categorical]; y=cohort.lapsed
-    assert not X.isna().any().any(), 'Feature matrix contains missing values'
     assert (pre.order_ts < CUTOFF).all(), 'Post-cutoff order leaked into features'
     X_train,X_test,y_train,y_test=train_test_split(X,y,test_size=.2,stratify=y,random_state=42)
-    preprocessor=ColumnTransformer([('num',StandardScaler(),numeric),('cat',OneHotEncoder(drop='first',handle_unknown='ignore'),categorical)])
+    preprocessor=ColumnTransformer([('num',Pipeline([('imputer',SimpleImputer(strategy='median')),('scale',StandardScaler())]),numeric),('cat',Pipeline([('imputer',SimpleImputer(strategy='constant',fill_value='unknown')),('onehot',OneHotEncoder(drop='first',handle_unknown='ignore'))]),categorical)])
     baseline=np.zeros(len(y_test),dtype=int)
     baseline_metrics={'accuracy':accuracy_score(y_test,baseline),'precision':precision_score(y_test,baseline,zero_division=0),'recall':recall_score(y_test,baseline,zero_division=0),'f1':f1_score(y_test,baseline,zero_division=0)}
     lr=Pipeline([('prep',preprocessor),('model',LogisticRegression(max_iter=1000,random_state=42))])
@@ -96,7 +95,7 @@ def build_lapse(orders, customers, segments):
     test_ids=cohort.loc[X_test.index,['customer_id','lapsed']].copy(); probs=chosen.predict_proba(X_test)[:,list(chosen.classes_).index(1)]
     test_ids['lapse_probability']=probs; test_ids=test_ids.merge(segments[['customer_id','is_premium']],on='customer_id',how='left'); ret=test_ids[test_ids.is_premium.eq(True)].sort_values('lapse_probability',ascending=False).head(10)
     ret.rename(columns={'lapsed':'actually_lapsed'})[['customer_id','lapse_probability','actually_lapsed']].to_csv(OUT/'retention_list.csv',index=False)
-    result={'cohort_size':len(cohort),'lapsed_count':int(y.sum()),'lapsed_rate':float(y.mean()),'train_rows':len(X_train),'test_rows':len(X_test),'baseline':baseline_metrics,'logistic_best_params':lrg.best_params_,'logistic_best_cv_f1':lrg.best_score_,'logistic_test':metrics(lrg.best_estimator_),'random_forest_best_params':rfg.best_params_,'random_forest_best_cv_f1':rfg.best_score_,'random_forest_test':metrics(rfg.best_estimator_),'selected_model':selected_name,'reloaded_predictions_equal':predictions_equal,'train_scaler_frequency_mean':float(lrg.best_estimator_.named_steps['prep'].named_transformers_['num'].mean_[numeric.index('frequency')]),'full_cohort_frequency_mean':float(cohort.frequency.mean()),'balanced_logistic_test':metrics(balanced_lr),'random_forest_top_features':top_features,'logistic_coefficients':sorted(coeffs,key=lambda z:abs(z['coefficient']),reverse=True)[:10],'premium_retention_list_true_lapsed':int(ret.lapsed.sum()) if len(ret) else 0}
+    result={'cohort_size':len(cohort),'lapsed_count':int(y.sum()),'lapsed_rate':float(y.mean()),'train_rows':len(X_train),'test_rows':len(X_test),'baseline':baseline_metrics,'logistic_best_params':lrg.best_params_,'logistic_best_cv_f1':lrg.best_score_,'logistic_test':metrics(lrg.best_estimator_),'random_forest_best_params':rfg.best_params_,'random_forest_best_cv_f1':rfg.best_score_,'random_forest_test':metrics(rfg.best_estimator_),'selected_model':selected_name,'reloaded_predictions_equal':predictions_equal,'train_scaler_frequency_mean':float(lrg.best_estimator_.named_steps['prep'].named_transformers_['num'].named_steps['scale'].mean_[numeric.index('frequency')]),'full_cohort_frequency_mean':float(cohort.frequency.mean()),'balanced_logistic_test':metrics(balanced_lr),'random_forest_top_features':top_features,'logistic_coefficients':sorted(coeffs,key=lambda z:abs(z['coefficient']),reverse=True)[:10],'premium_retention_list_true_lapsed':int(ret.lapsed.sum()) if len(ret) else 0}
     (OUT/'lapse_model_summary.json').write_text(json.dumps(result,indent=2,default=str),encoding='utf-8')
     return result
 

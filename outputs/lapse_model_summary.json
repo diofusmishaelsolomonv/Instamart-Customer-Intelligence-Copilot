@@ -96,52 +96,52 @@
   "logistic_coefficients": [
     {
       "feature": "num__frequency",
-      "coefficient": -1.5888629771012572,
+      "coefficient": -1.588862977101257,
       "sign": "negative"
     },
     {
       "feature": "cat__favourite_category_Electronics",
-      "coefficient": -0.810164303687436,
+      "coefficient": -0.8101643036874346,
       "sign": "negative"
     },
     {
       "feature": "cat__city_Delhi",
-      "coefficient": -0.35252555355959403,
+      "coefficient": -0.3525255535595997,
       "sign": "negative"
     },
     {
       "feature": "cat__favourite_category_Grocery",
-      "coefficient": -0.3061518244251788,
+      "coefficient": -0.3061518244251772,
       "sign": "negative"
     },
     {
       "feature": "cat__city_Mumbai",
-      "coefficient": -0.25188382978704194,
+      "coefficient": -0.2518838297870442,
       "sign": "negative"
     },
     {
       "feature": "cat__favourite_category_Snacks",
-      "coefficient": -0.2436511126175425,
+      "coefficient": -0.2436511126175418,
       "sign": "negative"
     },
     {
       "feature": "cat__gender_male",
-      "coefficient": -0.20024735075645692,
+      "coefficient": -0.2002473507564551,
       "sign": "negative"
     },
     {
       "feature": "num__monetary",
-      "coefficient": 0.19939962910577833,
+      "coefficient": 0.1993996291057788,
       "sign": "positive"
     },
     {
       "feature": "cat__city_Chennai",
-      "coefficient": -0.19511056303297394,
+      "coefficient": -0.19511056303297852,
       "sign": "negative"
     },
     {
       "feature": "cat__city_Hyderabad",
-      "coefficient": -0.15546242790975978,
+      "coefficient": -0.15546242790976642,
       "sign": "negative"
     }
   ],

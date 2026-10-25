@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   pipeline:
@@ -81,6 +81,19 @@ jobs:
                       raise SystemExit(f"SQL result has no header: {path}")
           print(f"Verified {len(required)} required deliverables, 7 SQL results, and 7 JSON summaries.")
           PY
+
+      - name: Commit required generated deliverables to main
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && success()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/clean/ data/instamart.db outputs/ state/
+          if ! git diff --cached --quiet; then
+            git commit -m "Commit reproducible capstone deliverables"
+            git push origin HEAD:main
+          else
+            echo "Required deliverables are already up to date."
+          fi
 
       - name: Upload run outputs for review
         if: always()

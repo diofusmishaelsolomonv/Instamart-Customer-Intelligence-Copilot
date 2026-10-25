@@ -8,14 +8,9 @@ __pycache__/
 *.py[cod]
 .DS_Store
 
-# Reproducible runtime data and generated deliverables
-# Keep data/policies/*.txt tracked; only ignore generated raw CSVs.
+# Generated raw inputs are reproducible; clean tables, database, reports,
+# trained model and state are required capstone deliverables and must be trackable.
 data/raw/*.csv
-data/clean/
-data/instamart.db
-outputs/
-state/
-*.joblib
 
 # Editors
 .vscode/

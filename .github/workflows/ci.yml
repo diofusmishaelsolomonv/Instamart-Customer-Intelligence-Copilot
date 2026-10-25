@@ -57,11 +57,14 @@ jobs:
               "data/clean/orders.csv", "data/instamart.db",
               "outputs/raw_audit.json", "outputs/part_a_cleaning_stats.json",
               "outputs/part_a_sql_summary.json", "outputs/rfm_summary.json",
-              "outputs/segment_profiles.csv", "outputs/customer_segments.csv",
-              "outputs/lapse_model_summary.json", "outputs/lapse_model.joblib",
-              "outputs/triage_results.csv", "outputs/part_c_summary.json",
-              "outputs/policy_eval_results.csv", "outputs/agent_runs.jsonl",
-              "outputs/refund_ledger.jsonl", "outputs/part_d_summary.json",
+              "outputs/segment_profiles.csv", "outputs/kmeans_metrics.csv", "outputs/customer_segments.csv",
+              "outputs/lapse_model_summary.json", "outputs/lapse_model.joblib", "outputs/retention_list.csv",
+              "outputs/triage_results.csv", "outputs/triage_budget_demo.csv",
+              "outputs/triage_zero_shot.csv", "outputs/triage_few_shot.csv",
+              "outputs/triage_retry_log.txt", "outputs/part_c_summary.json",
+              "outputs/policy_eval_results.csv", "outputs/policy_eval_zero_overlap.csv",
+              "outputs/agent_runs.jsonl", "outputs/refund_ledger.jsonl", "outputs/part_d_summary.json",
+              "state/S1_CRASH_RESUME.json", "state/S1_TOKEN_DEMO.json", "state/S1_TIMEOUT_DEMO.json",
           ]
           missing = [p for p in required if not (root / p).is_file() or (root / p).stat().st_size == 0]
           if missing:
@@ -79,7 +82,43 @@ jobs:
               with path.open(newline="", encoding="utf-8") as stream:
                   if not next(csv.reader(stream), []):
                       raise SystemExit(f"SQL result has no header: {path}")
-          print(f"Verified {len(required)} required deliverables, 7 SQL results, and 7 JSON summaries.")
+          # Acceptance checks for the downstream parts, not only file existence.
+          with (root / "outputs" / "lapse_model_summary.json").open(encoding="utf-8") as stream:
+              lapse = json.load(stream)
+          if lapse["selected_model"] not in {"random_forest", "logistic_regression"}:
+              raise SystemExit("No selected lapse model")
+          selected_metrics = lapse["random_forest_test"] if lapse["selected_model"] == "random_forest" else lapse["logistic_test"]
+          if selected_metrics["f1"] < 0.55 or not lapse["reloaded_predictions_equal"]:
+              raise SystemExit("Lapse model checkpoint failed")
+
+          with (root / "outputs" / "part_c_summary.json").open(encoding="utf-8") as stream:
+              triage = json.load(stream)
+          final_triage = triage["final_run"]
+          if final_triage["status_counts"].get("classified_json") != 135 or final_triage["status_counts"].get("classified_keyword") != 12 or final_triage["status_counts"].get("flagged_invalid_output") != 9:
+              raise SystemExit("Ticket classification status checkpoints failed")
+          if final_triage["redactions_total"] != 278 or final_triage["remaining_pii_matches"] != 0 or triage["budget_demo"]["budget_exhausted"] < 1:
+              raise SystemExit("Ticket privacy/budget checkpoints failed")
+
+          with (root / "outputs" / "part_d_summary.json").open(encoding="utf-8") as stream:
+              agent = json.load(stream)
+          if len(agent["scenarios"]) != 7 or agent["scenarios"][-1]["status"] != "FALLBACK_MAX_ITERATIONS":
+              raise SystemExit("Seven-scenario / iteration-limit checkpoint failed")
+          if agent["token_limit_demo"]["status"] != "FALLBACK_TOKEN_LIMIT" or agent["timeout_demo"]["status"] != "FALLBACK_TIMEOUT":
+              raise SystemExit("Safe-stop demonstrations failed")
+          if agent["crash_resume"]["status"] != "REFUND" or agent["crash_resume"]["tools_executed"] != ["get_order", "search_policy", "calculate_refund", "issue_refund"]:
+              raise SystemExit("Crash-and-resume checkpoint failed")
+          if agent["rag"]["overlap_10"] != {"answerable_doc_hits": 12, "answerable_fact_hits": 12, "unanswerable_fallbacks": 2} or agent["rag"]["overlap_0"]["answerable_fact_hits"] >= 12:
+              raise SystemExit("RAG evaluation checkpoints failed")
+
+          with (root / "outputs" / "triage_budget_demo.csv").open(newline="", encoding="utf-8") as stream:
+              if sum(1 for _ in csv.DictReader(stream)) != 164:
+                  raise SystemExit("Budget demonstration must contain all 164 tickets")
+          with (root / "outputs" / "retention_list.csv").open(newline="", encoding="utf-8") as stream:
+              retention_headers = next(csv.reader(stream), [])
+          if retention_headers != ["customer_id", "lapse_probability", "actually_lapsed"]:
+              raise SystemExit("Retention list columns are incorrect")
+
+          print(f"Verified {len(required)} required deliverables, 7 SQL results, and downstream acceptance checks.")
           PY
 
       - name: Commit required generated deliverables to main

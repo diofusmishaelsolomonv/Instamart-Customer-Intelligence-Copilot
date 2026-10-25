@@ -42,6 +42,46 @@ jobs:
       - name: Validate clean-data checkpoints
         run: python validate_data.py
 
+      - name: Verify expected deliverables
+        run: |
+          python - <<'PY'
+          import csv, json
+          from pathlib import Path
+
+          root = Path(".")
+          required = [
+              "data/raw/customers.csv", "data/raw/products.csv",
+              "data/raw/orders.csv", "data/raw/tickets.csv",
+              "data/raw/policy_eval.csv", "data/raw/agent_scenarios.csv",
+              "data/clean/customers.csv", "data/clean/products.csv",
+              "data/clean/orders.csv", "data/instamart.db",
+              "outputs/raw_audit.json", "outputs/part_a_cleaning_stats.json",
+              "outputs/part_a_sql_summary.json", "outputs/rfm_summary.json",
+              "outputs/segment_profiles.csv", "outputs/customer_segments.csv",
+              "outputs/lapse_model_summary.json", "outputs/lapse_model.joblib",
+              "outputs/triage_results.csv", "outputs/part_c_summary.json",
+              "outputs/policy_eval_results.csv", "outputs/agent_runs.jsonl",
+              "outputs/refund_ledger.jsonl", "outputs/part_d_summary.json",
+          ]
+          missing = [p for p in required if not (root / p).is_file() or (root / p).stat().st_size == 0]
+          if missing:
+              raise SystemExit("Missing/empty deliverables: " + ", ".join(missing))
+          for name in ["raw_audit.json", "part_a_cleaning_stats.json",
+                       "part_a_sql_summary.json", "rfm_summary.json",
+                       "lapse_model_summary.json", "part_c_summary.json",
+                       "part_d_summary.json"]:
+              with (root / "outputs" / name).open(encoding="utf-8") as stream:
+                  json.load(stream)
+          for i in range(1, 8):
+              path = root / "outputs" / f"q{i}_result.csv"
+              if not path.is_file() or path.stat().st_size == 0:
+                  raise SystemExit(f"Missing/empty SQL result: {path}")
+              with path.open(newline="", encoding="utf-8") as stream:
+                  if not next(csv.reader(stream), []):
+                      raise SystemExit(f"SQL result has no header: {path}")
+          print(f"Verified {len(required)} required deliverables, 7 SQL results, and 7 JSON summaries.")
+          PY
+
       - name: Upload run outputs for review
         if: always()
         uses: actions/upload-artifact@v4
